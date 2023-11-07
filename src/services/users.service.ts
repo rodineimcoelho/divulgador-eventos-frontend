@@ -1,5 +1,6 @@
 import { User } from '@/types/User';
-import { api } from './api';
+import { useApi } from './api';
+import { AxiosInstance } from 'axios';
 
 type CreateUserData = {
   fullName: string;
@@ -16,18 +17,20 @@ type UpdateUserData = {
   currentPassword: string;
 };
 
-class UsersService {
-  create(user: CreateUserData) {
+export function useUsersService() {
+  const api = useApi();
+
+  function create(user: CreateUserData) {
     return api.post('users', user);
   }
 
-  async findById(id: string): Promise<User> {
+  async function findById(id: string): Promise<User> {
     return (await api.get(`users/${id}`)).data;
   }
 
-  update(id: string, user: UpdateUserData) {
+  function update(id: string, user: UpdateUserData) {
     return api.patch(`users/${id}`, user);
   }
-}
 
-export default new UsersService();
+  return { create, findById, update };
+}

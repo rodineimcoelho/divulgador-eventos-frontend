@@ -6,7 +6,7 @@ import * as yup from 'yup';
 import { InferType } from 'yup';
 import { LoadingButton } from '@mui/lab';
 import { useEffect, useState } from 'react';
-import usersService from '@/services/users.service';
+import { useUsersService } from '@/services/users.service';
 import { isAxiosError } from 'axios';
 
 const schema = yup
@@ -54,6 +54,8 @@ export default function SignUp() {
     mode: 'onBlur',
     shouldFocusError: true
   });
+
+  const usersService = useUsersService();
 
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>();
   const [isSubmitErrorHandled, setIsSubmitErrorHandled] = useState<boolean>();

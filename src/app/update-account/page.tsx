@@ -8,7 +8,7 @@ import { LoadingButton } from '@mui/lab';
 import { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '@/context/AuthContext';
 import { emptyToUndefined } from '@/utils/emptyToUndefined';
-import usersService from '@/services/users.service';
+import { useUsersService } from '@/services/users.service';
 import { isAxiosError } from 'axios';
 
 const schema = yup
@@ -70,6 +70,8 @@ export default function UpdateAccount() {
   });
 
   const password = watch('password');
+
+  const usersService = useUsersService();
 
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>();
   const [isSubmitErrorHandled, setIsSubmitErrorHandled] = useState<boolean>();

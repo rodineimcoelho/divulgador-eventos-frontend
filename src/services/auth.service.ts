@@ -1,5 +1,5 @@
 import { User } from '@/types/User';
-import { api } from './api';
+import { useApi } from './api';
 
 type SignInRequestData = {
   email: string;
@@ -12,15 +12,17 @@ type AuthResponseData = {
   refresh_token: string;
 };
 
-class AuthService {
-  async signIn(data: SignInRequestData): Promise<AuthResponseData> {
+export function useAuthService() {
+  const api = useApi();
+
+  async function signIn(data: SignInRequestData): Promise<AuthResponseData> {
     return (await api.post('/auth/login', data)).data;
   }
 
-  async refresh(refreshToken: string): Promise<AuthResponseData> {
+  async function refresh(refreshToken: string): Promise<AuthResponseData> {
     return (await api.post('/auth/refresh', { refresh_token: refreshToken }))
       .data;
   }
-}
 
-export default new AuthService();
+  return { signIn, refresh };
+}

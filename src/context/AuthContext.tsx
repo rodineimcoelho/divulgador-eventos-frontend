@@ -1,11 +1,11 @@
 'use client';
-import { createContext, useEffect, useState } from 'react';
-import { api } from '@/services/api';
-import { useRouter } from 'next/navigation';
-import { Cookies } from 'react-cookie';
-import authService from '@/services/auth.service';
+import { createContext, useCallback, useEffect, useState } from 'react';
+import { useApi } from '@/services/api';
+import { usePathname, useRouter } from 'next/navigation';
+import { useCookies } from 'react-cookie';
+import { useAuthService } from '@/services/auth.service';
 import cookiesService from '@/services/cookies.service';
-import usersService from '@/services/users.service';
+import { useUsersService } from '@/services/users.service';
 import * as jwt from 'jsonwebtoken';
 import { User } from '@/types/User';
 
@@ -24,10 +24,19 @@ type AuthContextType = {
 export const AuthContext = createContext({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const api = useApi();
+  const authService = useAuthService();
+  const usersService = useUsersService();
+
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [user, setUser] = useState<User>();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>();
-  const router = useRouter();
-  const cookieStore = new Cookies();
+  const [cookies, _setCookies, removeCookies] = useCookies([
+    'refresh_token',
+    'access_token'
+  ]);
 
   async function signIn(data: SignInData) {
     const { user, access_token, refresh_token } =
@@ -42,41 +51,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(true);
   }
 
-  function signOut() {
-    cookieStore.remove('access_token');
-    cookieStore.remove('refresh_token');
+  const signOut = useCallback(() => {
+    removeCookies('access_token');
+    removeCookies('refresh_token');
+    delete api.defaults.headers['Authorization'];
     setUser(undefined);
     setIsAuthenticated(false);
     router.push('/');
-  }
+  }, [api.defaults.headers, removeCookies, router]);
 
   useEffect(() => {
     async function authenticate() {
-      const refreshToken = cookieStore.get('refresh_token');
+      try {
+        const refreshToken = cookies.refresh_token;
 
-      if (!refreshToken) return setIsAuthenticated(false);
+        if (!refreshToken) return setIsAuthenticated(false);
 
-      const accessToken = cookieStore.get('access_token');
-      if (!accessToken) {
-        const { user, access_token, refresh_token } =
-          await authService.refresh(refreshToken);
+        const accessToken = cookies.access_token;
+        if (!accessToken) {
+          const { user, access_token, refresh_token } =
+            await authService.refresh(refreshToken);
 
-        cookiesService.storeJwtCookie('access_token', access_token);
-        cookiesService.storeJwtCookie('refresh_token', refresh_token);
+          cookiesService.storeJwtCookie('access_token', access_token);
+          cookiesService.storeJwtCookie('refresh_token', refresh_token);
 
-        api.defaults.headers['Authorization'] = `Bearer ${access_token}`;
+          api.defaults.headers['Authorization'] = `Bearer ${access_token}`;
 
-        setUser(user);
-        setIsAuthenticated(true);
-      } else {
-        const { sub } = jwt.decode(accessToken) as jwt.JwtPayload;
-        setUser(await usersService.findById(sub!));
-        setIsAuthenticated(true);
+          setUser(user);
+          setIsAuthenticated(true);
+        } else {
+          const { sub } = jwt.decode(accessToken) as jwt.JwtPayload;
+          setUser(await usersService.findById(sub!));
+          setIsAuthenticated(true);
+        }
+      } catch {
+        signOut();
       }
     }
 
     authenticate();
-  }, []);
+  }, [
+    api.defaults.headers,
+    authService,
+    cookies.access_token,
+    cookies.refresh_token,
+    signOut,
+    usersService,
+    pathname
+  ]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, signIn, signOut }}>
