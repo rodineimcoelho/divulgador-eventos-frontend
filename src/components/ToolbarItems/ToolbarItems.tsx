@@ -1,13 +1,9 @@
-'use client';
-
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import ToolbarButtons from '../ToolbarButtons/ToolbarButtons';
 
 export default function ToolbarItems() {
-  const router = useRouter();
-
   return (
     <>
       <Box
@@ -31,19 +27,20 @@ export default function ToolbarItems() {
           }}
         />
       </Box>
-      <Typography
-        variant="h6"
-        component={Link}
-        href="/"
-        sx={{
-          flexGrow: 1,
-          color: 'inherit',
-          textDecoration: 'none',
-          display: { xs: 'none', sm: 'flex' }
-        }}
-      >
-        Divulgador de Eventos
-      </Typography>
+
+      <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' } }}>
+        <Typography
+          variant="h6"
+          component={Link}
+          href="/"
+          sx={{
+            color: 'inherit',
+            textDecoration: 'none'
+          }}
+        >
+          Divulgador de Eventos
+        </Typography>
+      </Box>
 
       <Box
         sx={{
@@ -68,13 +65,7 @@ export default function ToolbarItems() {
         />
       </Box>
 
-      <Button
-        color="inherit"
-        variant="outlined"
-        onClick={() => router.push('/signup')}
-      >
-        Cadastre-se
-      </Button>
+      <ToolbarButtons />
     </>
   );
 }

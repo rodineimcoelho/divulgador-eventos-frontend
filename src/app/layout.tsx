@@ -7,6 +7,7 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import ToolbarItems from '@/components/ToolbarItems/ToolbarItems';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'Divulgador de Eventos',
@@ -21,13 +22,15 @@ export default function RootLayout({
   return (
     <html lang="pt-br">
       <body>
-        <ThemeRegistry>
-          <AppBar position="sticky">
-            <Toolbar>
-              <ToolbarItems />
-            </Toolbar>
-          </AppBar>
-          {children}
+        <ThemeRegistry options={{ key: 'mui' }}>
+          <AuthProvider>
+            <AppBar position="sticky">
+              <Toolbar>
+                <ToolbarItems />
+              </Toolbar>
+            </AppBar>
+            {children}
+          </AuthProvider>
         </ThemeRegistry>
       </body>
     </html>

@@ -5,7 +5,9 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { InferType } from 'yup';
 import { LoadingButton } from '@mui/lab';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { AuthContext } from '@/context/AuthContext';
+import { emptyToUndefined } from '@/utils/emptyToUndefined';
 import usersService from '@/services/users.service';
 import { isAxiosError } from 'axios';
 
@@ -20,31 +22,43 @@ const schema = yup
     password: yup
       .string()
       .trim()
-      .required('Senha obrigatória.')
-      .min(8, 'A senha deve ter no mínimo 8 caracteres.'),
-    passwordConfirmation: yup
-      .string()
-      .required('Confirme sua senha.')
-      .test({
-        test: (value, object) => object.parent.password === value,
-        message: 'Senhas não são iguais.'
-      })
+      .min(8, 'A senha deve ter no mínimo 8 caracteres.')
+      .transform(emptyToUndefined),
+    passwordConfirmation: yup.string().when('password', (values, schema) => {
+      const [password] = values;
+
+      if (password)
+        return schema
+          .trim()
+          .required('Confirme sua senha.')
+          .test({
+            test: (value, object) => object.parent.password === value,
+            message: 'Senhas não são iguais.'
+          });
+
+      return schema.transform(() => undefined);
+    }),
+    currentPassword: yup.string().trim().required('Senha obrigatória.')
   })
   .required();
 
 export type Inputs = InferType<typeof schema>;
 
-export default function SignUp() {
+export default function UpdateAccount() {
+  const { user, signIn } = useContext(AuthContext);
+
   const defaultValues: Inputs = {
-    fullName: '',
-    email: '',
+    fullName: user?.fullName!,
+    email: user?.email!,
     password: '',
-    passwordConfirmation: ''
+    passwordConfirmation: '',
+    currentPassword: ''
   };
 
   const {
     control,
     formState: { errors, isSubmitting, isDirty },
+    watch,
     setError,
     reset,
     handleSubmit
@@ -55,23 +69,49 @@ export default function SignUp() {
     shouldFocusError: true
   });
 
+  const password = watch('password');
+
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>();
   const [isSubmitErrorHandled, setIsSubmitErrorHandled] = useState<boolean>();
 
   const onSubmit: SubmitHandler<Inputs> = async (data: Inputs) => {
     try {
-      await usersService.create(data);
+      await usersService.update(user?.id!, {
+        ...data,
+        email: data.email !== user?.email ? data.email : undefined
+      });
+
+      if (data.password || data.email !== user?.email) {
+        const signInEmail =
+          data.email !== user?.email ? data.email : user.email;
+        const signInPassword = data.password
+          ? data.password
+          : data.currentPassword;
+        await signIn({ email: signInEmail, password: signInPassword });
+      }
+
       setIsSubmitSuccessful(true);
       setIsSubmitErrorHandled(undefined);
       reset(defaultValues, { keepDefaultValues: true });
     } catch (error: any) {
       let errorHandled = false;
-      if (isAxiosError(error) && error.response?.status === 400) {
+      if (
+        isAxiosError(error) &&
+        error.response &&
+        [400, 401].includes(error.response.status)
+      ) {
         const errorMessage = error.response.data.message as string[];
 
         if (errorMessage.includes('email already in use')) {
           setError('email', {
             message: 'Este e-mail já está sendo utilizado.'
+          });
+          errorHandled = true;
+        }
+
+        if (errorMessage.includes('wrong password')) {
+          setError('currentPassword', {
+            message: 'Senha incorreta.'
           });
           errorHandled = true;
         }
@@ -90,7 +130,7 @@ export default function SignUp() {
     <Container>
       <Paper sx={{ my: 3, p: 3 }}>
         <Typography variant="h3" sx={{ textAlign: 'center', mb: 3 }}>
-          Cadastro de Usuário
+          Editar Conta
         </Typography>
 
         <Typography variant="caption">
@@ -145,23 +185,42 @@ export default function SignUp() {
                     ? errors.password.message
                     : 'A senha deve ter no mínimo 8 caracteres.'
                 }
-                label="Senha*"
+                label="Nova senha"
                 inputRef={field.ref}
                 {...field}
               />
             )}
           />
+
           <Controller
             name="passwordConfirmation"
             control={control}
             render={({ field }) => (
               <TextField
+                disabled={!password}
                 error={!!errors.passwordConfirmation}
                 margin="dense"
                 type="password"
                 fullWidth
                 helperText={errors.passwordConfirmation?.message}
-                label="Confirme sua senha*"
+                label="Confirme sua senha"
+                inputRef={field.ref}
+                {...field}
+              />
+            )}
+          />
+
+          <Controller
+            name="currentPassword"
+            control={control}
+            render={({ field }) => (
+              <TextField
+                error={!!errors.currentPassword}
+                margin="dense"
+                type="password"
+                fullWidth
+                helperText={errors.currentPassword?.message}
+                label="Senha atual*"
                 inputRef={field.ref}
                 {...field}
               />
@@ -176,9 +235,7 @@ export default function SignUp() {
             type="submit"
             color={isSubmitSuccessful && !isDirty ? 'success' : 'primary'}
           >
-            {isSubmitSuccessful && !isDirty
-              ? 'Usuário cadastrado'
-              : 'Confirmar'}
+            {isSubmitSuccessful && !isDirty ? 'Alterações salvas' : 'Confirmar'}
           </LoadingButton>
 
           {isSubmitErrorHandled !== undefined && !isSubmitErrorHandled && (
