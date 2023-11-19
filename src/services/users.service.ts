@@ -1,6 +1,5 @@
-import { User } from '@/types/User';
+import UserDto from '@/dto/user.dto';
 import { useApi } from './api';
-import { AxiosInstance } from 'axios';
 
 type CreateUserData = {
   fullName: string;
@@ -24,7 +23,7 @@ export function useUsersService() {
     return api.post('users', user);
   }
 
-  async function findById(id: string): Promise<User> {
+  async function findById(id: string): Promise<UserDto> {
     return (await api.get(`users/${id}`)).data;
   }
 

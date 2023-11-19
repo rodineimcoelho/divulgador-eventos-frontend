@@ -1,4 +1,4 @@
-import { User } from '@/types/User';
+import UserDto from '@/dto/user.dto';
 import { useApi } from './api';
 
 type SignInRequestData = {
@@ -7,7 +7,7 @@ type SignInRequestData = {
 };
 
 type AuthResponseData = {
-  user: User;
+  user: UserDto;
   access_token: string;
   refresh_token: string;
 };

@@ -21,7 +21,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-br">
-      <body>
+      <body
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh'
+        }}
+      >
         <ThemeRegistry options={{ key: 'mui' }}>
           <AuthProvider>
             <AppBar position="sticky">

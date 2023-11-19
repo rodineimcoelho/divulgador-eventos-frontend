@@ -3,22 +3,29 @@ import axios, { isAxiosError } from 'axios';
 import { useContext } from 'react';
 import { Cookies } from 'react-cookie';
 
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL
+});
+
 export function useApi() {
-  const { signOut } = useContext(AuthContext);
+  const { authenticate } = useContext(AuthContext);
 
-  const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL
-  });
-
-  api.interceptors.request.use(
+  api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
       if (isAxiosError(error)) {
         const status = error.response?.status;
         const message = error.response?.data.message as string[];
+        const url = error.response?.config.url;
 
-        if (status === 401 && message.includes('invalid or expired token'))
-          return signOut();
+        if (
+          status === 401 &&
+          url !== 'auth/refresh' &&
+          message.includes('invalid or expired token')
+        ) {
+          await authenticate();
+          return axios.request(error.config!);
+        }
       }
 
       return Promise.reject(error);

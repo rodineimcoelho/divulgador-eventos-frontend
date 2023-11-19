@@ -60,9 +60,13 @@ export default function SignUp() {
   };
 
   return (
-    <Container>
-      <Paper sx={{ my: 3, p: 3 }}>
-        <Typography variant="h3" sx={{ textAlign: 'center', mb: 3 }}>
+    <Container fixed>
+      <Paper sx={{ my: 4, p: 3 }}>
+        <Typography
+          component="h1"
+          variant="h3"
+          sx={{ textAlign: 'center', mb: 3 }}
+        >
           Entrar
         </Typography>
 
