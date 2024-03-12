@@ -6,7 +6,7 @@ import UnauthenticatedButtons from './variants/UnauthenticatedButtons';
 import AuthenticatedButtons from './variants/AuthenticatedButtons';
 import { Box, Button } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import eventPages from '@/utils/eventPages';
+import publicPages from '@/utils/publicPages';
 
 export default function ToolbarButtons() {
   const { isAuthenticated } = useContext(AuthContext);
@@ -17,7 +17,7 @@ export default function ToolbarButtons() {
   return (
     <>
       <Box sx={{ display: { xs: 'none', xl: 'flex' } }}>
-        {eventPages.map((route, index) => (
+        {publicPages.map((route, index) => (
           <Button
             color="inherit"
             variant="text"

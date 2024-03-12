@@ -1,6 +1,6 @@
 import { LabeledRoute } from '@/types/LabeledRoute';
 
-const eventPages: LabeledRoute[] = [
+const publicPages: LabeledRoute[] = [
   {
     label: 'Todos os eventos',
     path: '/'
@@ -24,7 +24,8 @@ const eventPages: LabeledRoute[] = [
   {
     label: 'Workshops',
     path: '/workshops'
-  }
+  },
+  { label: 'Sobre', path: '/about' }
 ];
 
-export default eventPages;
+export default publicPages;

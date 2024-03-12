@@ -4,7 +4,7 @@ import { AuthContext } from '@/context/AuthContext';
 import { MouseEventHandler, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { LabeledRoute } from '@/types/LabeledRoute';
-import eventPages from '@/utils/eventPages';
+import publicPages from '@/utils/publicPages';
 
 const adminRoutes: LabeledRoute[] = [
   { label: 'Gerenciar eventos', path: '/manage-events' },
@@ -49,7 +49,7 @@ export default function AuthenticatedDrawer({
         <Box
           sx={{ display: { xs: 'flex', xl: 'none' }, flexDirection: 'column' }}
         >
-          {eventPages.map((route, index) => (
+          {publicPages.map((route, index) => (
             <DrawerListAction
               onClick={() => router.push(route.path)}
               key={index}

@@ -2,7 +2,7 @@ import { Drawer, Divider, List, Button, Box } from '@mui/material';
 import DrawerListAction from '../DrawerListAction/DrawerListAction';
 import { MouseEventHandler } from 'react';
 import { useRouter } from 'next/navigation';
-import eventPages from '@/utils/eventPages';
+import publicPages from '@/utils/publicPages';
 
 export default function UnauthenticatedDrawer({
   isDrawerOpen,
@@ -16,7 +16,7 @@ export default function UnauthenticatedDrawer({
   return (
     <Drawer anchor="right" open={isDrawerOpen} onClose={handleDrawer}>
       <List disablePadding sx={{ flexGrow: 1 }}>
-        {eventPages.map((route, index) => (
+        {publicPages.map((route, index) => (
           <DrawerListAction onClick={() => router.push(route.path)} key={index}>
             {route.label}
           </DrawerListAction>
