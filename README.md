@@ -30,3 +30,10 @@ Abra [http://localhost:3000](http://localhost:3000) com seu navegador para ver o
 npm run build
 npm run start
 ```
+
+## Próximos Passos
+
+- Adicionar um cadastro mais completo
+- Melhorar a acessibilidade
+- Melhorar a semântica e SEO
+- Corrigir warnings

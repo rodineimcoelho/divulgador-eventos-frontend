@@ -1,3 +1,0 @@
-{
-  "src/**/*.{tsx,ts}": "eslint --fix"
-}
