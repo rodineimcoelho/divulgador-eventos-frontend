@@ -4,25 +4,28 @@ import LecturerListItem from '@/components/LecturerListItem/LecturerListItem';
 import { useLecturersService } from '@/services/lecturers.service';
 import { Add } from '@mui/icons-material';
 import {
+  Alert,
   Box,
   Button,
   Dialog,
   DialogActions,
   DialogTitle,
   Divider,
-  Fab,
   List,
+  Snackbar,
   Typography
 } from '@mui/material';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import LecturerDto from '@/dto/lecturer.dto';
+import { isAxiosError } from 'axios';
 
 export default function ManageLecturers() {
   const [isAddingLecturer, setIsAddingLecturer] = useState(false);
   const [lecturerToEdit, setLecturerToEdit] = useState<LecturerDto>();
   const [lecturerToDeleteId, setLecturerToDeleteId] = useState<string>();
   const [lecturers, setLecturers] = useState<LecturerDto[]>();
+  const [showDeleteErrorSnackbar, setShowDeleteErrorSnackbar] = useState(false);
   const lecturersService = useLecturersService();
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -32,14 +35,23 @@ export default function ManageLecturers() {
   }
 
   async function removeLecturer() {
-    await lecturersService.remove(lecturerToDeleteId!);
-    if (lecturers) {
-      const index = lecturers?.findIndex(
-        (lecturer) => lecturer.id === lecturerToDeleteId
-      );
-      const newLecturers = [...lecturers];
-      newLecturers.splice(index, 1);
-      setLecturers(newLecturers);
+    try {
+      await lecturersService.remove(lecturerToDeleteId!);
+      if (lecturers) {
+        const index = lecturers?.findIndex(
+          (lecturer) => lecturer.id === lecturerToDeleteId
+        );
+        const newLecturers = [...lecturers];
+        newLecturers.splice(index, 1);
+        setLecturers(newLecturers);
+      }
+    } catch (error) {
+      if (isAxiosError(error)) {
+        const message = error.response?.data.message as string[];
+        if (message.includes('lecturer have events')) {
+          setShowDeleteErrorSnackbar(true);
+        }
+      }
     }
     setLecturerToDeleteId(undefined);
   }
@@ -125,6 +137,21 @@ export default function ManageLecturers() {
           </DialogActions>
         </Dialog>
       )}
+
+      <Snackbar
+        open={showDeleteErrorSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setShowDeleteErrorSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert
+          onClose={() => setShowDeleteErrorSnackbar(false)}
+          severity="error"
+        >
+          Não foi possível remover o ministrante. Ministrantes cadastrados em
+          eventos não podem ser removidos.
+        </Alert>
+      </Snackbar>
     </>
   );
 }
