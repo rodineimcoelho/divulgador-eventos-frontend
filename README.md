@@ -7,7 +7,7 @@ Front-end de um divulgador de eventos desenvolvido com [Next.js](https://nextjs.
 Para a execução da aplicação algumas variáveis de ambiente devem estar definidas, o que pode ser feito a partir de um arquivo `.env.local` na raiz do projeto.
 
 ```bash
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
 ## Executando o servidor de desenvolvimento
